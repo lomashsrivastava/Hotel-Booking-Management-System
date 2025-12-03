@@ -1,0 +1,3556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>🏨 EcoStay Hotel Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Exo+2:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary: #00ff9d;
+            --secondary: #00b8ff;
+            --dark: #0a192f;
+            --darker: #0d1117;
+            --light: #e6f1ff;
+            --glass: rgba(255, 255, 255, 0.05);
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --error: #e74c3c;
+            --eco-green: #00ff88;
+            --energy-blue: #0066ff;
+            --staff-purple: #9b59b6;
+            --ai-pink: #e84393;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+
+        body {
+            font-family: 'Exo 2', sans-serif;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            color: var(--light);
+            height: 100vh;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1.2fr;
+            grid-template-rows: 80px 1fr;
+            gap: 15px;
+            padding: 15px;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            min-width: 1200px;
+        }
+
+        @media (max-width: 1400px) {
+            .main-container {
+                grid-template-columns: 1.2fr 2fr 1fr;
+                min-width: 1000px;
+            }
+        }
+
+        @media (max-width: 1100px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 80px 1fr 1fr 1fr;
+                min-width: 800px;
+            }
+            
+            .form-section, .room-section, .table-section {
+                grid-column: 1;
+            }
+            
+            .form-section { grid-row: 2; }
+            .room-section { grid-row: 3; }
+            .table-section { grid-row: 4; }
+        }
+
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(0, 255, 157, 0.3);
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            grid-row: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 25px;
+            animation: slideDown 1s ease;
+            min-height: 80px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo i {
+            color: var(--eco-green);
+            font-size: 2.2rem;
+            animation: pulse 2s infinite;
+        }
+
+        .logo h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
+            white-space: nowrap;
+        }
+
+        .eco-stats {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: center;
+            padding: 8px 15px;
+            border-radius: 10px;
+            background: rgba(0, 255, 157, 0.1);
+            min-width: 120px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .stat:hover {
+            transform: scale(1.05);
+            background: rgba(0, 255, 157, 0.2);
+        }
+
+        .stat h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+
+        .form-section {
+            grid-column: 1;
+            grid-row: 2;
+            display: flex;
+            flex-direction: column;
+            animation: fadeInLeft 1s ease;
+            overflow: hidden;
+        }
+
+        .form-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+            min-height: 0;
+            padding: 20px;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--secondary);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .input-group input,
+        .input-group select,
+        .input-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(0, 255, 157, 0.2);
+            border-radius: 10px;
+            color: var(--light);
+            font-family: 'Exo 2', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 25px rgba(0, 255, 157, 0.4);
+        }
+
+        .room-section {
+            grid-column: 2;
+            grid-row: 2;
+            display: flex;
+            flex-direction: column;
+            animation: fadeInUp 1s ease;
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        .building-display {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        .floor {
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .floor-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            color: var(--energy-blue);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        .rooms {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .room {
+            width: 65px;
+            height: 65px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 5px;
+            border: 2px solid transparent;
+        }
+
+        .room.available {
+            background: linear-gradient(135deg, rgba(0, 255, 157, 0.15), rgba(0, 184, 255, 0.15));
+            border-color: var(--primary);
+        }
+
+        .room.booked {
+            background: linear-gradient(135deg, rgba(155, 89, 182, 0.3), rgba(142, 68, 173, 0.3));
+            border-color: var(--staff-purple);
+            animation: pulse 2s infinite;
+        }
+
+        .room.maintenance {
+            background: linear-gradient(135deg, rgba(243, 156, 18, 0.25), rgba(230, 126, 34, 0.25));
+            border: 2px solid var(--warning);
+            animation: pulse 2s infinite;
+        }
+
+        .room.selected {
+            border-color: var(--warning);
+            box-shadow: 0 0 20px rgba(243, 156, 18, 0.5);
+        }
+
+        .room.assigned {
+            border-color: var(--staff-purple);
+            background: linear-gradient(135deg, rgba(155, 89, 182, 0.25), rgba(142, 68, 173, 0.25));
+        }
+
+        .room.eco-mode {
+            border-color: var(--eco-green);
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.15), rgba(0, 184, 255, 0.15));
+        }
+
+        .room:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(0, 255, 157, 0.5);
+        }
+
+        .room-number {
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: white;
+            text-shadow: 0 0 2px rgba(0,0,0,0.5);
+        }
+
+        .room-name {
+            font-size: 0.65rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            color: white;
+            margin-top: 3px;
+            text-shadow: 0 0 2px rgba(0,0,0,0.5);
+        }
+
+        .table-section {
+            grid-column: 3;
+            grid-row: 2;
+            display: flex;
+            flex-direction: column;
+            animation: fadeInRight 1s ease;
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        .table-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .customer-table-container {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 10px;
+            flex: 1;
+            overflow-y: auto;
+            max-height: none;
+            min-height: 300px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        th {
+            background: rgba(0, 255, 157, 0.2);
+            padding: 12px 8px;
+            text-align: left;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 10px 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        tr:hover {
+            background: rgba(0, 255, 157, 0.05);
+        }
+
+        .qr-section {
+            margin-top: 20px;
+            text-align: center;
+            animation: qrAppear 0.5s ease;
+        }
+
+        .qr-container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            display: inline-block;
+            margin: 15px 0;
+            animation: glow 2s infinite;
+            min-height: 220px;
+            min-width: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        #qrCode {
+            width: 180px;
+            height: 180px;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .payment-timer {
+            margin-top: 10px;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--warning);
+            font-size: 1rem;
+            padding: 10px;
+            background: rgba(243, 156, 18, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(243, 156, 18, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 14px 25px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+            width: 100%;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: var(--dark);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 255, 157, 0.5);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            border: 2px solid var(--secondary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .btn-export {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(0, 255, 157, 0.3); }
+            50% { box-shadow: 0 0 30px rgba(0, 255, 157, 0.6); }
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeInLeft {
+            from { transform: translateX(-50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeInRight {
+            from { transform: translateX(50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes qrAppear {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            display: none;
+            animation: slideDown 0.5s ease;
+        }
+
+        .status-success {
+            background: rgba(46, 204, 113, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+            display: block;
+        }
+
+        .status-warning {
+            background: rgba(243, 156, 18, 0.2);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+            display: block;
+        }
+
+        .status-error {
+            background: rgba(231, 76, 60, 0.2);
+            color: var(--error);
+            border: 1px solid var(--error);
+            display: block;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: var(--dark);
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 1200px;
+            width: 95%;
+            text-align: center;
+            border: 2px solid var(--primary);
+            animation: slideUp 0.5s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--light);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 10px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-modal:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--primary);
+        }
+
+        .booking-details {
+            text-align: left;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .eco-features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .eco-feature {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            background: rgba(0, 255, 157, 0.08);
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+
+        /* Simplified FAB Menu */
+        .staff-fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 9999;
+        }
+        
+        .fab-main {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--staff-purple), var(--ai-pink));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 10px 40px rgba(155, 89, 182, 0.6);
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            animation: float 3s ease-in-out infinite;
+            position: relative;
+            z-index: 100;
+        }
+        
+        .fab-main:hover {
+            transform: scale(1.1) rotate(10deg);
+            box-shadow: 0 15px 50px rgba(155, 89, 182, 0.8);
+        }
+        
+        .fab-menu {
+            position: absolute;
+            bottom: 85px;
+            right: 0;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            padding: 15px;
+            background: rgba(10, 25, 47, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 2px solid rgba(155, 89, 182, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.4s ease;
+            z-index: 9999;
+            min-width: 250px;
+        }
+        
+        .fab-menu.active {
+            display: flex;
+        }
+        
+        .fab-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-family: 'Exo 2', sans-serif;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            text-align: left;
+        }
+        
+        .fab-item:hover {
+            background: rgba(0, 255, 157, 0.15);
+            transform: translateX(-5px);
+            box-shadow: 0 10px 30px rgba(0, 255, 157, 0.2);
+        }
+        
+        .fab-item i {
+            font-size: 18px;
+            width: 25px;
+            color: var(--primary);
+        }
+        
+        .badge {
+            background: var(--primary);
+            color: var(--dark);
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-left: auto;
+            min-width: 25px;
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Simple Staff Controls */
+        .staff-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .control-btn {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(155, 89, 182, 0.3);
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .control-btn:hover {
+            background: rgba(155, 89, 182, 0.2);
+            border-color: var(--staff-purple);
+            transform: translateY(-2px);
+        }
+
+        .control-btn i {
+            font-size: 1.2rem;
+            color: var(--staff-purple);
+        }
+
+        .staff-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 5px;
+        }
+
+        .status-active {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+        }
+
+        .status-busy {
+            background: rgba(243, 156, 18, 0.2);
+            color: #f39c12;
+        }
+
+        .status-offline {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+
+        /* Tab Navigation - SIMPLIFIED */
+        .tab-navigation {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            flex-wrap: wrap;
+        }
+        
+        .tab-btn {
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Exo 2', sans-serif;
+            font-size: 0.9rem;
+            min-width: 100px;
+        }
+        
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .tab-btn.active {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: var(--dark);
+            font-weight: bold;
+            box-shadow: 0 5px 20px rgba(0, 255, 157, 0.3);
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Search Bar */
+        .search-container {
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(0, 255, 157, 0.2);
+            border-radius: 10px;
+            color: white;
+            font-family: 'Exo 2', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--secondary);
+            pointer-events: none;
+        }
+
+        /* Staff List Items */
+        .staff-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 15px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .staff-item {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .staff-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(5px);
+        }
+
+        .staff-item.active {
+            background: rgba(155, 89, 182, 0.15);
+            border-color: var(--staff-purple);
+        }
+
+        .staff-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--staff-purple), var(--ai-pink));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .staff-info {
+            flex: 1;
+        }
+
+        .staff-name {
+            font-weight: bold;
+            color: white;
+            margin-bottom: 3px;
+        }
+
+        .staff-role {
+            font-size: 0.8rem;
+            color: var(--secondary);
+        }
+
+        /* Simple Room Controls */
+        .room-control-panel {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .room-control-item {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .room-control-item:hover {
+            transform: translateY(-3px);
+            background: rgba(0, 255, 157, 0.1);
+        }
+
+        .room-control-item i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .control-status {
+            font-size: 0.8rem;
+            font-weight: bold;
+            font-family: 'Orbitron', sans-serif;
+            padding: 3px 10px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary);
+        }
+
+        /* Notification Toast */
+        .notification-toast {
+            position: fixed;
+            bottom: 120px;
+            right: 30px;
+            background: rgba(10, 25, 47, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 157, 0.3);
+            border-radius: 12px;
+            padding: 15px 25px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 9999;
+            transform: translateY(100px);
+            opacity: 0;
+            animation: toastIn 0.5s ease forwards,
+                       toastOut 0.5s ease 2.5s forwards;
+        }
+        
+        .notification-toast.success {
+            border-color: var(--success);
+        }
+        
+        .notification-toast.error {
+            border-color: var(--error);
+        }
+        
+        .notification-toast.warning {
+            border-color: var(--warning);
+        }
+        
+        @keyframes toastIn {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes toastOut {
+            to {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+        }
+
+        /* Export Button */
+        .export-section {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .export-btn {
+            padding: 12px 25px;
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .export-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(39, 174, 96, 0.4);
+        }
+
+        .export-btn.excel {
+            background: linear-gradient(45deg, #1e8449, #27ae60);
+        }
+
+        /* Simple Dashboard Cards */
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .dashboard-card {
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-staff {
+            background: linear-gradient(135deg, rgba(155, 89, 182, 0.1), rgba(142, 68, 173, 0.1));
+            border: 2px solid var(--staff-purple);
+        }
+
+        .card-rooms {
+            background: linear-gradient(135deg, rgba(0, 255, 157, 0.1), rgba(0, 184, 255, 0.1));
+            border: 2px solid var(--primary);
+        }
+
+        .card-revenue {
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(39, 174, 96, 0.1));
+            border: 2px solid var(--success);
+        }
+
+        .card-eco {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 184, 255, 0.1));
+            border: 2px solid var(--eco-green);
+        }
+
+        /* Clear Data Button */
+        .clear-data-btn {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .clear-data-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(231, 76, 60, 0.1);
+            border-radius: 10px;
+            z-index: -1;
+            transition: all 0.3s ease;
+        }
+
+        .clear-data-btn:hover::after {
+            background: rgba(231, 76, 60, 0.3);
+        }
+
+        /* Assignment Tags */
+        .assignment-tag {
+            display: inline-block;
+            padding: 3px 8px;
+            background: rgba(155, 89, 182, 0.2);
+            color: var(--staff-purple);
+            border-radius: 10px;
+            font-size: 0.7rem;
+            margin: 2px;
+            border: 1px solid rgba(155, 89, 182, 0.3);
+        }
+
+        /* Simple Form */
+        .simple-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header -->
+        <div class="header glass-card">
+            <div class="logo">
+                <i class="fas fa-leaf"></i>
+                <h1>Lomash Booking Management System</h1>
+            </div>
+            <div class="eco-stats">
+                <div class="stat" onclick="showStatsDetails()">
+                    <h3 id="energySaved">0 kWh</h3>
+                    <p>Energy Saved</p>
+                </div>
+                <div class="stat" onclick="showRoomsOverview()">
+                    <h3 id="roomsBooked">0</h3>
+                    <p>Rooms Active</p>
+                </div>
+                <div class="stat" onclick="showEcoScoreDetails()">
+                    <h3 id="ecoScore">100%</h3>
+                    <p>Eco Score</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Left: Registration Form -->
+        <div class="form-section glass-card">
+            <div class="section-title">
+                <i class="fas fa-user-check"></i>
+                Guest Registration
+            </div>
+            <div class="form-content">
+                <div id="statusMessage"></div>
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label><i class="fas fa-user"></i> Full Name *</label>
+                        <input type="text" id="name" placeholder="Enter guest name" required>
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-door-closed"></i> Room No *</label>
+                        <input type="text" id="roomNo" placeholder="Enter room number (101-1010)" required>
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-building"></i> Floor No *</label>
+                        <input type="number" id="floorNo" placeholder="Floor (1-10)" min="1" max="10" required>
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-bed"></i> Room Type *</label>
+                        <select id="roomType" required>
+                            <option value="">Select Type</option>
+                            <option value="Deluxe">Deluxe</option>
+                            <option value="Suite">Suite</option>
+                            <option value="Eco-Friendly">Eco-Friendly</option>
+                            <option value="Executive">Executive</option>
+                            <option value="Presidential">Presidential</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-phone"></i> Contact *</label>
+                        <input type="tel" id="contact" placeholder="Phone number" required>
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-id-card"></i> ID Type *</label>
+                        <select id="idType" required>
+                            <option value="">Select ID</option>
+                            <option value="Passport">Passport</option>
+                            <option value="Driver License">Driver License</option>
+                            <option value="National ID">National ID</option>
+                            <option value="Aadhar">Aadhar</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-fingerprint"></i> ID Number *</label>
+                        <input type="text" id="idNumber" placeholder="ID Number" required>
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-bullseye"></i> Purpose *</label>
+                        <select id="purpose" required>
+                            <option value="">Select Purpose</option>
+                            <option value="Business">Business</option>
+                            <option value="Vacation">Vacation</option>
+                            <option value="Conference">Conference</option>
+                            <option value="Wedding">Wedding</option>
+                            <option value="Medical">Medical</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-calendar-plus"></i> Check-in Date *</label>
+                        <input type="date" id="checkinDate" required>
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-calendar-minus"></i> Check-out Date *</label>
+                        <input type="date" id="checkoutDate" required>
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-rupee-sign"></i> Total Bill (₹) *</label>
+                        <input type="number" id="totalBill" placeholder="Amount" min="0" required>
+                    </div>
+                    <div class="input-group full-width">
+                        <label><i class="fas fa-barcode"></i> Serial Number</label>
+                        <input type="text" id="serialNumber" disabled>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" id="bookBtn" onclick="startBookingProcess()">
+                    <i class="fas fa-qrcode"></i> Generate QR & Complete Booking
+                </button>
+
+                <div class="qr-section" id="qrSection" style="display: none;">
+                    <h3><i class="fas fa-qrcode"></i> Payment QR Code</h3>
+                    <div class="qr-container">
+                        <div id="qrCode"></div>
+                        <div id="qrLoading" style="display: none; flex-direction: column; align-items: center; justify-content: center;">
+                            <i class="fas fa-spinner fa-spin fa-3x" style="color: var(--primary);"></i>
+                            <p>Generating QR Code...</p>
+                        </div>
+                    </div>
+                    <div class="payment-timer" id="paymentTimer">
+                        <i class="fas fa-clock"></i> Payment will complete in <span id="countdown">5</span> seconds...
+                    </div>
+                </div>
+
+                <div class="eco-features">
+                    <div class="eco-feature">
+                        <i class="fas fa-solar-panel"></i>
+                        <span>Solar Powered</span>
+                    </div>
+                    <div class="eco-feature">
+                        <i class="fas fa-recycle"></i>
+                        <span>Waste Recycling</span>
+                    </div>
+                    <div class="eco-feature">
+                        <i class="fas fa-tint"></i>
+                        <span>Water Conservation</span>
+                    </div>
+                    <div class="eco-feature">
+                        <i class="fas fa-leaf"></i>
+                        <span>Green Building</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Middle: Room Display -->
+        <div class="room-section glass-card">
+            <div class="section-title">
+                <i class="fas fa-building"></i>
+                Room Allocation - LomashStay
+            </div>
+            <div class="building-display" id="roomDisplay">
+                <!-- Rooms dynamically generated -->
+            </div>
+        </div>
+
+        <!-- Right: Customer Table -->
+        <div class="table-section glass-card">
+            <div class="section-title">
+                <i class="fas fa-users"></i>
+                Current Guests
+                <span style="font-size: 0.8rem; color: var(--secondary); margin-left: auto;">
+                    Staff: <span id="activeStaffCount">0</span> Active
+                </span>
+            </div>
+            <div class="table-container">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" id="searchGuest" placeholder="Search guests by name or room...">
+                </div>
+                <div class="customer-table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Room</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Staff</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customerTable">
+                            <!-- Data populated here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="export-section">
+                    <button class="export-btn excel" onclick="exportToExcel()">
+                        <i class="fas fa-file-excel"></i> Export Bookings
+                    </button>
+                    <button class="btn btn-secondary clear-data-btn" onclick="clearAllData()">
+                        <i class="fas fa-trash"></i> Clear Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal" id="successModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Booking Confirmed</h2>
+                <button class="close-modal" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="modalMessage" class="booking-details"></div>
+            <button class="btn btn-primary" onclick="closeModal()">
+                <i class="fas fa-check"></i> OK
+            </button>
+        </div>
+    </div>
+
+    <!-- Staff Management Modal -->
+    <div class="modal" id="staffModal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 class="modal-title"><i class="fas fa-user-tie"></i> Staff Management</h2>
+                <button class="close-modal" onclick="closeStaffModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="tab-navigation">
+                <button class="tab-btn active" onclick="switchTab('staffOverview', this)">Overview</button>
+                <button class="tab-btn" onclick="switchTab('staffListTab', this)">Staff List</button>
+                <button class="tab-btn" onclick="switchTab('assignRoomsTab', this)">Assign Rooms</button>
+                <button class="tab-btn" onclick="switchTab('staffTasksTab', this)">Tasks</button>
+            </div>
+            
+            <div id="staffOverview" class="tab-content active">
+                <div class="dashboard-cards">
+                    <div class="dashboard-card card-staff" onclick="switchTab('staffListTab', document.querySelectorAll('.tab-btn')[1])">
+                        <i class="fas fa-users fa-2x"></i>
+                        <div style="font-size: 1.5rem; font-weight: bold;" id="totalStaffCount">0</div>
+                        <div>Total Staff</div>
+                    </div>
+                    <div class="dashboard-card card-rooms" onclick="switchTab('assignRoomsTab', document.querySelectorAll('.tab-btn')[2])">
+                        <i class="fas fa-door-closed fa-2x"></i>
+                        <div style="font-size: 1.5rem; font-weight: bold;" id="assignedRoomsCount">0</div>
+                        <div>Assigned Rooms</div>
+                    </div>
+                    <div class="dashboard-card card-revenue" onclick="showStaffPerformance()">
+                        <i class="fas fa-chart-line fa-2x"></i>
+                        <div style="font-size: 1.5rem; font-weight: bold;" id="avgRating">0.0</div>
+                        <div>Avg Rating</div>
+                    </div>
+                    <div class="dashboard-card card-eco" onclick="showStaffTasks()">
+                        <i class="fas fa-tasks fa-2x"></i>
+                        <div style="font-size: 1.5rem; font-weight: bold;" id="pendingTasks">0</div>
+                        <div>Pending Tasks</div>
+                    </div>
+                </div>
+                
+                <div class="staff-controls">
+                    <button class="control-btn" onclick="addNewStaffMember()">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Add Staff</span>
+                    </button>
+                    <button class="control-btn" onclick="assignStaffToRoom()">
+                        <i class="fas fa-door-closed"></i>
+                        <span>Assign Room</span>
+                    </button>
+                    <button class="control-btn" onclick="showAllAssignments()">
+                        <i class="fas fa-list"></i>
+                        <span>View All</span>
+                    </button>
+                    <button class="control-btn" onclick="generateStaffReport()">
+                        <i class="fas fa-file-export"></i>
+                        <span>Export</span>
+                    </button>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <h4 style="color: var(--primary); margin-bottom: 10px;">Recent Activity</h4>
+                    <div id="recentActivity" style="max-height: 200px; overflow-y: auto;">
+                        <!-- Recent activities will be added here -->
+                    </div>
+                </div>
+            </div>
+            
+            <div id="staffListTab" class="tab-content">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" id="staffSearch" placeholder="Search staff by name or role..." oninput="searchStaff()">
+                </div>
+                
+                <div class="staff-list" id="staffListContainer">
+                    <!-- Staff list will be populated here -->
+                </div>
+                
+                <button class="btn btn-primary" onclick="addNewStaffMember()" style="margin-top: 15px;">
+                    <i class="fas fa-user-plus"></i> Add New Staff Member
+                </button>
+            </div>
+            
+            <div id="assignRoomsTab" class="tab-content">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; height: 400px;">
+                    <div>
+                        <h4 style="color: var(--primary); margin-bottom: 10px;">Available Rooms</h4>
+                        <div id="availableRoomsList" style="height: 350px; overflow-y: auto; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 10px;">
+                            <!-- Available rooms will be listed here -->
+                        </div>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--staff-purple); margin-bottom: 10px;">Available Staff</h4>
+                        <div id="availableStaffList" style="height: 350px; overflow-y: auto; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 10px;">
+                            <!-- Available staff will be listed here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="assignmentPanel" style="margin-top: 20px; padding: 15px; background: rgba(155, 89, 182, 0.1); border-radius: 10px; display: none;">
+                    <h4 style="color: var(--staff-purple); margin-bottom: 10px;">Assign Staff to Room</h4>
+                    <div id="assignmentDetails"></div>
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button class="btn btn-primary" onclick="confirmAssignment()">
+                            <i class="fas fa-check"></i> Confirm Assignment
+                        </button>
+                        <button class="btn btn-secondary" onclick="cancelAssignment()">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="staffTasksTab" class="tab-content">
+                <div style="margin-bottom: 15px;">
+                    <button class="control-btn" onclick="addNewTask()" style="display: inline-flex; width: auto;">
+                        <i class="fas fa-plus"></i> Add Task
+                    </button>
+                    <button class="control-btn" onclick="refreshTasks()" style="display: inline-flex; width: auto; margin-left: 10px;">
+                        <i class="fas fa-sync"></i> Refresh
+                    </button>
+                </div>
+                
+                <div id="tasksList" style="max-height: 350px; overflow-y: auto;">
+                    <!-- Tasks will be listed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Simplified FAB Menu -->
+    <div id="staffFAB" class="staff-fab">
+        <div class="fab-main" onclick="toggleStaffMenu()">
+            <i class="fas fa-user-tie"></i>
+        </div>
+        <div class="fab-menu">
+            <button class="fab-item" onclick="showStaffManagement()">
+                <i class="fas fa-user-tie"></i>
+                <span>Staff Management</span>
+                <span class="badge" id="staffBadge">0</span>
+            </button>
+            <button class="fab-item" onclick="showRoomControls()">
+                <i class="fas fa-sliders-h"></i>
+                <span>Room Controls</span>
+                <span class="badge" id="roomsBadge">0</span>
+            </button>
+            <button class="fab-item" onclick="showQuickActions()">
+                <i class="fas fa-bolt"></i>
+                <span>Quick Actions</span>
+            </button>
+            <button class="fab-item" onclick="showMaintenance()">
+                <i class="fas fa-tools"></i>
+                <span>Maintenance</span>
+                <span class="badge" id="maintenanceBadge">0</span>
+            </button>
+            <button class="fab-item" onclick="showReports()">
+                <i class="fas fa-chart-bar"></i>
+                <span>Reports</span>
+            </button>
+            <button class="fab-item" onclick="showSettings()">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // SIMPLIFIED HOTEL MANAGEMENT SYSTEM
+        // ============================================
+
+        // Initialize all data
+        let roomStatus = JSON.parse(localStorage.getItem('roomStatus')) || {};
+        let ecoStats = JSON.parse(localStorage.getItem('ecoStats')) || {
+            energySaved: 1250.5,
+            roomsBooked: 0,
+            ecoScore: 100,
+            waterSaved: 5200,
+            carbonReduced: 120,
+            totalRevenue: 0,
+            averageRating: 4.5
+        };
+        
+        let staffMembers = JSON.parse(localStorage.getItem('staffMembers')) || [
+            {
+                id: 1,
+                name: "John Doe",
+                role: "Housekeeping Supervisor",
+                department: "Housekeeping",
+                contact: "+91 98765 43210",
+                status: "active",
+                rating: 4.8,
+                assignedRooms: [],
+                tasks: [],
+                joinDate: "2023-01-15"
+            },
+            {
+                id: 2,
+                name: "Sarah Miller",
+                role: "Room Service Manager",
+                department: "Food & Beverage",
+                contact: "+91 98765 43211",
+                status: "active",
+                rating: 4.9,
+                assignedRooms: [],
+                tasks: [],
+                joinDate: "2023-02-20"
+            }
+        ];
+        
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        let maintenanceRequests = JSON.parse(localStorage.getItem('maintenanceRequests')) || [];
+        
+        let bookingInProgress = false;
+        let countdownInterval;
+        let selectedRoomKey = null;
+        let currentBookingData = null;
+        let currentPage = 1;
+        const itemsPerPage = 8;
+        let searchQuery = '';
+        
+        // Assignment variables
+        let selectedRoomForAssignment = null;
+        let selectedStaffForAssignment = null;
+
+        // Helper function to calculate room number from floor and position
+        function getRoomNumber(floor, position) {
+            return (floor * 100) + position;
+        }
+
+        // Helper function to get floor from room number
+        function getFloorFromRoomNumber(roomNumber) {
+            return Math.floor(roomNumber / 100);
+        }
+
+        // Update eco stats display
+        function updateEcoStats() {
+            ecoStats.roomsBooked = Object.keys(roomStatus).length;
+            ecoStats.totalRevenue = Object.values(roomStatus).reduce((sum, room) => sum + parseFloat(room.totalBill || 0), 0);
+            
+            document.getElementById('energySaved').textContent = `${ecoStats.energySaved.toFixed(1)} kWh`;
+            document.getElementById('roomsBooked').textContent = ecoStats.roomsBooked;
+            document.getElementById('ecoScore').textContent = `${Math.min(100, ecoStats.ecoScore)}%`;
+            
+            // Update staff count
+            const activeStaff = staffMembers.filter(s => s.status === 'active').length;
+            document.getElementById('activeStaffCount').textContent = activeStaff;
+            
+            localStorage.setItem('ecoStats', JSON.stringify(ecoStats));
+        }
+
+        // Update FAB badges
+        function updateFABBadges() {
+            const assignments = staffMembers.reduce((count, staff) => count + staff.assignedRooms.length, 0);
+            const maintenanceCount = maintenanceRequests.filter(r => r.status === 'pending').length;
+            const roomsWithControls = Object.keys(roomStatus).length;
+            
+            document.getElementById('staffBadge').textContent = assignments;
+            document.getElementById('roomsBadge').textContent = roomsWithControls;
+            document.getElementById('maintenanceBadge').textContent = maintenanceCount;
+        }
+
+        // Generate serial number
+        function generateSerialNumber(name, roomNo) {
+            const prefix = name.substring(0, 3).toUpperCase();
+            const randomNum = Math.floor(1000 + Math.random() * 9000);
+            const timestamp = Date.now().toString().slice(-4);
+            return `${prefix}${randomNum}${roomNo}${timestamp}`;
+        }
+
+        // Generate rooms display
+        function generateRooms() {
+            const roomDisplay = document.getElementById('roomDisplay');
+            roomDisplay.innerHTML = '';
+            
+            for (let floor = 1; floor <= 10; floor++) {
+                const floorDiv = document.createElement('div');
+                floorDiv.className = 'floor';
+                floorDiv.id = `floor-${floor}`;
+                
+                const floorHeader = document.createElement('div');
+                floorHeader.className = 'floor-header';
+                floorHeader.innerHTML = `<i class="fas fa-layer-group"></i> Floor ${floor} (Rooms ${floor}01-${floor}10)`;
+                
+                const roomsDiv = document.createElement('div');
+                roomsDiv.className = 'rooms';
+                
+                for (let position = 1; position <= 10; position++) {
+                    const roomNumber = getRoomNumber(floor, position);
+                    const roomKey = `${floor}-${roomNumber}`;
+                    const roomDiv = document.createElement('div');
+                    
+                    // Determine room status
+                    let roomClass = 'room';
+                    let roomNameText = 'Available';
+                    let roomTitle = `Room ${roomNumber}`;
+                    
+                    const isBooked = roomStatus[roomKey];
+                    
+                    if (isBooked) {
+                        const details = roomStatus[roomKey];
+                        roomClass += ' booked';
+                        roomNameText = details.name.substring(0, 8);
+                        roomTitle = `${details.name} | ${details.roomType}`;
+                    } else {
+                        roomClass += ' available';
+                    }
+                    
+                    // Check for staff assignments
+                    const assignedStaff = staffMembers.find(staff => 
+                        staff.assignedRooms.includes(roomKey) && staff.status === 'active'
+                    );
+                    if (assignedStaff) {
+                        roomClass += ' assigned';
+                        roomTitle += ` | Assigned to: ${assignedStaff.name}`;
+                    }
+                    
+                    // Check for maintenance
+                    const hasMaintenance = maintenanceRequests.some(task => 
+                        task.roomKey === roomKey && task.status === 'pending'
+                    );
+                    if (hasMaintenance) {
+                        roomClass += ' maintenance';
+                        roomTitle += ' | MAINTENANCE NEEDED';
+                    }
+                    
+                    roomDiv.className = roomClass;
+                    roomDiv.id = `room-${roomKey}`;
+                    roomDiv.title = roomTitle;
+                    
+                    const roomNumberDiv = document.createElement('div');
+                    roomNumberDiv.className = 'room-number';
+                    roomNumberDiv.textContent = roomNumber;
+                    
+                    const roomNameDiv = document.createElement('div');
+                    roomNameDiv.className = 'room-name';
+                    roomNameDiv.textContent = roomNameText;
+                    
+                    roomDiv.appendChild(roomNumberDiv);
+                    roomDiv.appendChild(roomNameDiv);
+                    
+                    // Add click handler
+                    roomDiv.onclick = () => {
+                        if (isBooked) {
+                            showGuestDetails(floor, roomNumber);
+                        } else {
+                            selectRoom(floor, roomNumber);
+                        }
+                    };
+                    
+                    roomsDiv.appendChild(roomDiv);
+                }
+                
+                floorDiv.appendChild(floorHeader);
+                floorDiv.appendChild(roomsDiv);
+                roomDisplay.appendChild(floorDiv);
+            }
+            
+            updateFABBadges();
+        }
+
+        // Select room for booking
+        function selectRoom(floor, roomNumber) {
+            if (bookingInProgress) {
+                showNotification('Please complete current booking first!', 'warning');
+                return;
+            }
+            
+            // Remove previous selection
+            if (selectedRoomKey) {
+                const prevRoom = document.getElementById(`room-${selectedRoomKey}`);
+                if (prevRoom) prevRoom.classList.remove('selected');
+            }
+            
+            // Set new selection
+            selectedRoomKey = `${floor}-${roomNumber}`;
+            const selectedRoom = document.getElementById(`room-${selectedRoomKey}`);
+            
+            // Update input fields
+            document.getElementById('floorNo').value = floor;
+            document.getElementById('roomNo').value = roomNumber;
+            
+            // Highlight selected room
+            if (selectedRoom) {
+                selectedRoom.classList.add('selected');
+            }
+            
+            showNotification(`Room ${roomNumber} selected`, 'success');
+            document.getElementById('name').focus();
+        }
+
+        // Update customer table
+        function updateCustomerTable() {
+            const tableBody = document.getElementById('customerTable');
+            
+            let bookings = Object.keys(roomStatus).map(key => {
+                const details = roomStatus[key];
+                const [floor, room] = key.split('-');
+                return { key, floor, room, details };
+            });
+            
+            // Apply search filter
+            if (searchQuery) {
+                const query = searchQuery.toLowerCase();
+                bookings = bookings.filter(item => 
+                    item.details.name.toLowerCase().includes(query) ||
+                    item.room.toString().includes(query) ||
+                    item.details.roomType.toLowerCase().includes(query)
+                );
+            }
+            
+            // Clear table
+            tableBody.innerHTML = '';
+            
+            if (bookings.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="5" style="text-align: center; padding: 30px; color: var(--secondary)">
+                    <i class="fas fa-hotel"></i> ${searchQuery ? 'No matching bookings' : 'No bookings yet'}
+                </td>`;
+                tableBody.appendChild(row);
+                return;
+            }
+            
+            // Populate table
+            bookings.forEach(item => {
+                const { floor, room, details } = item;
+                
+                // Find staff assigned to this room
+                const assignedStaff = staffMembers.find(staff => 
+                    staff.assignedRooms.includes(item.key) && staff.status === 'active'
+                );
+                
+                const staffInfo = assignedStaff ? 
+                    `<span style="color: var(--staff-purple); font-size: 0.8rem;">${assignedStaff.name.split(' ')[0]}</span>` : 
+                    '<span style="color: var(--secondary); font-size: 0.8rem;">Unassigned</span>';
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <div style="font-weight: bold; color: var(--primary);">${room}</div>
+                        <div style="font-size: 0.7rem; color: var(--secondary);">Floor ${floor}</div>
+                    </td>
+                    <td>
+                        <div style="font-weight: bold;">${details.name}</div>
+                        <div style="font-size: 0.8rem; color: var(--secondary);">${details.contact}</div>
+                    </td>
+                    <td>${details.roomType}</td>
+                    <td>${staffInfo}</td>
+                    <td>
+                        <span class="staff-status status-active">Active</span>
+                    </td>
+                `;
+                row.onclick = () => showGuestDetails(parseInt(floor), parseInt(room));
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Show status message
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.className = `status-message status-${type}`;
+            statusDiv.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'times-circle'}"></i> ${message}`;
+            statusDiv.style.display = 'block';
+            
+            anime({
+                targets: statusDiv,
+                translateY: [-20, 0],
+                opacity: [0, 1],
+                duration: 500
+            });
+            
+            setTimeout(() => {
+                anime({
+                    targets: statusDiv,
+                    opacity: 0,
+                    duration: 300,
+                    complete: () => {
+                        statusDiv.style.display = 'none';
+                    }
+                });
+            }, 3000);
+        }
+
+        // Start booking process
+        async function startBookingProcess() {
+            // Get form values
+            const name = document.getElementById('name').value.trim();
+            const roomNo = document.getElementById('roomNo').value.trim();
+            const floorNo = document.getElementById('floorNo').value.trim();
+            const roomType = document.getElementById('roomType').value;
+            const contact = document.getElementById('contact').value.trim();
+            const checkinDate = document.getElementById('checkinDate').value;
+            const checkoutDate = document.getElementById('checkoutDate').value;
+            const idType = document.getElementById('idType').value;
+            const idNumber = document.getElementById('idNumber').value.trim();
+            const purpose = document.getElementById('purpose').value;
+            const totalBill = document.getElementById('totalBill').value.trim();
+            
+            // Validate
+            if (!name || !roomNo || !floorNo || !roomType || !contact || !checkinDate || !checkoutDate || !idType || !idNumber || !purpose || !totalBill) {
+                showStatus('Please fill all required fields!', 'error');
+                return;
+            }
+            
+            const roomNum = parseInt(roomNo);
+            const floorNum = parseInt(floorNo);
+            
+            if (isNaN(roomNum) || roomNum < 101 || roomNum > 1010) {
+                showStatus('Room number must be between 101 and 1010!', 'error');
+                return;
+            }
+            
+            if (isNaN(floorNum) || floorNum < 1 || floorNum > 10) {
+                showStatus('Floor must be between 1 and 10!', 'error');
+                return;
+            }
+            
+            const expectedFloor = getFloorFromRoomNumber(roomNum);
+            if (expectedFloor !== floorNum) {
+                showStatus(`Room ${roomNo} belongs to floor ${expectedFloor}, not floor ${floorNo}!`, 'error');
+                return;
+            }
+            
+            const roomKey = `${floorNo}-${roomNo}`;
+            if (roomStatus[roomKey]) {
+                showStatus('Room already booked!', 'error');
+                return;
+            }
+            
+            // Disable booking button
+            const bookBtn = document.getElementById('bookBtn');
+            bookBtn.disabled = true;
+            bookBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            bookingInProgress = true;
+            
+            try {
+                // Generate serial number
+                const serialNumber = generateSerialNumber(name, roomNo);
+                document.getElementById('serialNumber').value = serialNumber;
+                
+                // Create booking data
+                currentBookingData = {
+                    name,
+                    roomNo,
+                    floorNo,
+                    roomType,
+                    contact,
+                    idType,
+                    idNumber,
+                    purpose,
+                    checkinDate,
+                    checkoutDate,
+                    totalBill,
+                    serialNumber,
+                    bookingTime: new Date().toISOString(),
+                    status: 'confirmed',
+                    paymentStatus: 'pending'
+                };
+                
+                // Show QR section
+                const qrSection = document.getElementById('qrSection');
+                qrSection.style.display = 'block';
+                qrSection.scrollIntoView({ behavior: 'smooth' });
+                
+                // Generate QR Code
+                await generateQRCode(currentBookingData);
+                
+                // Start payment countdown
+                startPaymentCountdown(currentBookingData);
+                
+            } catch (error) {
+                console.error('Booking error:', error);
+                showStatus('Booking failed. Please try again.', 'error');
+                resetBookingButton();
+            }
+        }
+
+        // Generate QR Code
+        function generateQRCode(bookingData) {
+            return new Promise((resolve) => {
+                const qrContainer = document.getElementById('qrCode');
+                const qrLoading = document.getElementById('qrLoading');
+                
+                qrContainer.innerHTML = '';
+                qrLoading.style.display = 'flex';
+                
+                const qrData = `
+ECO-STAY PAYMENT CONFIRMATION
+=============================
+Guest: ${bookingData.name}
+Room: ${bookingData.roomNo}, Floor ${bookingData.floorNo}
+Type: ${bookingData.roomType}
+Amount: ₹${bookingData.totalBill}
+Contact: ${bookingData.contact}
+Serial: ${bookingData.serialNumber}
+Date: ${new Date().toLocaleDateString()}
+Payment ID: PAY-${Date.now().toString(36).toUpperCase()}
+Status: Pending
+=============================
+`;
+                setTimeout(() => {
+                    try {
+                        QRCode.toCanvas(qrContainer, qrData, {
+                            width: 180,
+                            margin: 1,
+                            color: {
+                                dark: '#0a192f',
+                                light: '#ffffff'
+                            }
+                        }, function(error) {
+                            if (error) {
+                                console.error('QR Code error:', error);
+                                createFallbackQRCode(qrContainer, bookingData);
+                            }
+                            qrLoading.style.display = 'none';
+                            qrContainer.style.display = 'block';
+                            resolve();
+                        });
+                    } catch (error) {
+                        console.error('QR generation failed:', error);
+                        createFallbackQRCode(qrContainer, bookingData);
+                        qrLoading.style.display = 'none';
+                        qrContainer.style.display = 'block';
+                        resolve();
+                    }
+                }, 1000);
+            });
+        }
+
+        // Start payment countdown
+        function startPaymentCountdown(bookingData) {
+            let countdown = 5;
+            const countdownElement = document.getElementById('countdown');
+            const timerElement = document.getElementById('paymentTimer');
+            
+            countdownElement.textContent = countdown;
+            
+            countdownInterval = setInterval(() => {
+                countdown--;
+                countdownElement.textContent = countdown;
+                
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    completePaymentProcess(bookingData);
+                }
+            }, 1000);
+        }
+
+        // Complete payment process
+        function completePaymentProcess(bookingData) {
+            const roomKey = `${bookingData.floorNo}-${bookingData.roomNo}`;
+            
+            // Update booking data
+            bookingData.paymentStatus = 'completed';
+            bookingData.paymentTime = new Date().toISOString();
+            
+            // Add to room status
+            roomStatus[roomKey] = bookingData;
+            
+            // Update eco stats
+            ecoStats.energySaved += Math.floor(Math.random() * 50) + 20;
+            ecoStats.roomsBooked = Object.keys(roomStatus).length;
+            ecoStats.ecoScore = Math.min(100, ecoStats.ecoScore + Math.random() * 5);
+            
+            // Save data
+            saveAllData();
+            
+            // Update displays
+            generateRooms();
+            updateCustomerTable();
+            updateEcoStats();
+            
+            // Show success
+            showBookingSuccessAnimation(bookingData);
+            
+            // Show notification
+            showNotification(`✅ Booking confirmed: ${bookingData.name} in Room ${bookingData.roomNo}`, 'success');
+            
+            // Auto-reset form
+            setTimeout(() => {
+                resetForm();
+                showSuccessModal(bookingData);
+            }, 2000);
+        }
+
+        // Reset form
+        function resetForm() {
+            document.getElementById('name').value = '';
+            document.getElementById('roomNo').value = '';
+            document.getElementById('floorNo').value = '';
+            document.getElementById('roomType').value = '';
+            document.getElementById('contact').value = '';
+            document.getElementById('idType').value = '';
+            document.getElementById('idNumber').value = '';
+            document.getElementById('purpose').value = '';
+            document.getElementById('checkinDate').value = '';
+            document.getElementById('checkoutDate').value = '';
+            document.getElementById('totalBill').value = '';
+            document.getElementById('serialNumber').value = '';
+            
+            // Hide QR section
+            const qrSection = document.getElementById('qrSection');
+            qrSection.style.display = 'none';
+            qrSection.innerHTML = `
+                <h3><i class="fas fa-qrcode"></i> Payment QR Code</h3>
+                <div class="qr-container">
+                    <div id="qrCode"></div>
+                    <div id="qrLoading" style="display: none; flex-direction: column; align-items: center; justify-content: center;">
+                        <i class="fas fa-spinner fa-spin fa-3x" style="color: var(--primary);"></i>
+                        <p>Generating QR Code...</p>
+                    </div>
+                </div>
+                <div class="payment-timer" id="paymentTimer">
+                    <i class="fas fa-clock"></i> Payment will complete in <span id="countdown">5</span> seconds...
+                </div>
+            `;
+            
+            // Reset booking button
+            resetBookingButton();
+            
+            // Clear room selection
+            selectedRoomKey = null;
+            document.querySelectorAll('.room.selected').forEach(r => {
+                r.classList.remove('selected');
+            });
+            
+            // Set default dates
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const dayAfter = new Date(tomorrow);
+            dayAfter.setDate(dayAfter.getDate() + 1);
+            
+            document.getElementById('checkinDate').value = tomorrow.toISOString().split('T')[0];
+            document.getElementById('checkoutDate').value = dayAfter.toISOString().split('T')[0];
+            
+            // Focus
+            document.getElementById('name').focus();
+        }
+
+        // Reset booking button
+        function resetBookingButton() {
+            const bookBtn = document.getElementById('bookBtn');
+            bookBtn.disabled = false;
+            bookBtn.innerHTML = '<i class="fas fa-qrcode"></i> Generate QR & Complete Booking';
+            bookingInProgress = false;
+        }
+
+        // Show success modal
+        function showSuccessModal(bookingData) {
+            const modalTitle = document.getElementById('modalTitle');
+            const modalMessage = document.getElementById('modalMessage');
+            
+            modalTitle.textContent = '🎉 LomashStay Booking Confirmed!';
+            modalMessage.innerHTML = `
+                <p><strong>Guest Name:</strong> ${bookingData.name}</p>
+                <p><strong>Room Details:</strong> Room ${bookingData.roomNo}, Floor ${bookingData.floorNo}</p>
+                <p><strong>Room Type:</strong> ${bookingData.roomType}</p>
+                <p><strong>Contact:</strong> ${bookingData.contact}</p>
+                <p><strong>Check-in:</strong> ${bookingData.checkinDate}</p>
+                <p><strong>Check-out:</strong> ${bookingData.checkoutDate}</p>
+                <p><strong>Total Bill:</strong> ₹${bookingData.totalBill}</p>
+                <p><strong>Serial Number:</strong> <span style="color: var(--primary); font-weight: bold">${bookingData.serialNumber}</span></p>
+                <p style="color: var(--success); text-align: center; margin-top: 15px; padding: 15px; background: rgba(46, 204, 113, 0.1); border-radius: 10px;">
+                    <i class="fas fa-check-circle"></i> Payment confirmed successfully!
+                </p>
+            `;
+            
+            document.getElementById('successModal').style.display = 'flex';
+        }
+
+        // Show guest details
+        function showGuestDetails(floor, room) {
+            const roomKey = `${floor}-${room}`;
+            const details = roomStatus[roomKey];
+            
+            if (!details) return;
+            
+            // Find assigned staff
+            const assignedStaff = staffMembers.find(staff => 
+                staff.assignedRooms.includes(roomKey) && staff.status === 'active'
+            );
+            
+            const modalTitle = document.getElementById('modalTitle');
+            const modalMessage = document.getElementById('modalMessage');
+            
+            modalTitle.textContent = `Guest Details - Room ${room}`;
+            
+            modalMessage.innerHTML = `
+                <div class="booking-details">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <p><strong>Name:</strong> ${details.name}</p>
+                            <p><strong>Room:</strong> ${room}, Floor ${floor}</p>
+                            <p><strong>Type:</strong> ${details.roomType}</p>
+                            <p><strong>Contact:</strong> ${details.contact}</p>
+                        </div>
+                        <div>
+                            <p><strong>ID:</strong> ${details.idType} - ${details.idNumber}</p>
+                            <p><strong>Purpose:</strong> ${details.purpose}</p>
+                            <p><strong>Check-in:</strong> ${details.checkinDate}</p>
+                            <p><strong>Check-out:</strong> ${details.checkoutDate}</p>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <p><strong>Bill Amount:</strong> <span style="color: var(--primary);">₹${details.totalBill}</span></p>
+                        <p><strong>Serial Number:</strong> ${details.serialNumber}</p>
+                    </div>
+                </div>
+                
+                ${assignedStaff ? `
+                <div style="margin-top: 20px; padding: 15px; background: rgba(155, 89, 182, 0.1); border-radius: 10px;">
+                    <h4 style="color: var(--staff-purple); margin-bottom: 10px;">Assigned Staff</h4>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div class="staff-avatar">
+                            ${assignedStaff.name.split(' ').map(n => n[0]).join('')}
+                        </div>
+                        <div>
+                            <div style="font-weight: bold;">${assignedStaff.name}</div>
+                            <div style="color: var(--secondary); font-size: 0.9rem;">${assignedStaff.role}</div>
+                            <div style="color: var(--warning); font-size: 0.8rem;">Rating: ${assignedStaff.rating}/5</div>
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+                
+                <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <button class="control-btn" onclick="assignStaffToRoom('${roomKey}')">
+                        <i class="fas fa-user-tie"></i>
+                        <span>${assignedStaff ? 'Change Staff' : 'Assign Staff'}</span>
+                    </button>
+                    <button class="control-btn" onclick="initiateCheckout('${roomKey}')" style="background: rgba(231, 76, 60, 0.1); border-color: rgba(231, 76, 60, 0.3);">
+                        <i class="fas fa-door-open"></i>
+                        <span>Check-out</span>
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('successModal').style.display = 'flex';
+        }
+
+        // Initiate checkout
+        function initiateCheckout(roomKey) {
+            if (!confirm('Are you sure you want to check out this guest?')) return;
+            
+            const details = roomStatus[roomKey];
+            if (!details) return;
+            
+            // Remove from room status
+            delete roomStatus[roomKey];
+            
+            // Remove staff assignments
+            staffMembers.forEach(staff => {
+                staff.assignedRooms = staff.assignedRooms.filter(room => room !== roomKey);
+            });
+            
+            // Save data
+            saveAllData();
+            
+            // Update displays
+            generateRooms();
+            updateCustomerTable();
+            updateEcoStats();
+            updateFABBadges();
+            
+            // Show checkout message
+            showNotification(`Guest ${details.name} checked out from Room ${details.roomNo}`, 'success');
+            closeModal();
+        }
+
+        // ============================================
+        // SIMPLIFIED STAFF MANAGEMENT
+        // ============================================
+
+        // Toggle staff menu
+        function toggleStaffMenu() {
+            const menu = document.querySelector('.fab-menu');
+            menu.classList.toggle('active');
+        }
+
+        // Show staff management modal
+        function showStaffManagement() {
+            toggleStaffMenu();
+            document.getElementById('staffModal').style.display = 'flex';
+            loadStaffOverview();
+        }
+
+        // Close staff modal
+        function closeStaffModal() {
+            document.getElementById('staffModal').style.display = 'none';
+        }
+
+        // Switch tabs in staff modal
+        function switchTab(tabName, button) {
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Add active class to clicked tab
+            button.classList.add('active');
+            
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Load tab content
+            if (tabName === 'staffOverview') {
+                loadStaffOverview();
+            } else if (tabName === 'staffListTab') {
+                loadStaffList();
+            } else if (tabName === 'assignRoomsTab') {
+                loadAssignRoomsTab();
+            } else if (tabName === 'staffTasksTab') {
+                loadStaffTasks();
+            }
+        }
+
+        // Load staff overview
+        function loadStaffOverview() {
+            const totalStaff = staffMembers.length;
+            const activeStaff = staffMembers.filter(s => s.status === 'active').length;
+            const assignedRooms = staffMembers.reduce((count, staff) => count + staff.assignedRooms.length, 0);
+            const avgRating = staffMembers.length > 0 ? 
+                (staffMembers.reduce((sum, staff) => sum + staff.rating, 0) / staffMembers.length).toFixed(1) : '0.0';
+            const pendingTasks = tasks.filter(t => t.status === 'pending').length;
+            
+            document.getElementById('totalStaffCount').textContent = totalStaff;
+            document.getElementById('assignedRoomsCount').textContent = assignedRooms;
+            document.getElementById('avgRating').textContent = avgRating;
+            document.getElementById('pendingTasks').textContent = pendingTasks;
+            
+            // Load recent activity
+            const recentActivity = document.getElementById('recentActivity');
+            recentActivity.innerHTML = '';
+            
+            // Get recent assignments
+            const recentAssignments = [];
+            staffMembers.forEach(staff => {
+                if (staff.assignedRooms.length > 0) {
+                    staff.assignedRooms.forEach(roomKey => {
+                        recentAssignments.push({
+                            staff: staff.name,
+                            room: roomKey.split('-')[1],
+                            time: 'Today'
+                        });
+                    });
+                }
+            });
+            
+            // Show up to 5 recent activities
+            const activitiesToShow = recentAssignments.slice(0, 5);
+            
+            activitiesToShow.forEach(activity => {
+                const activityDiv = document.createElement('div');
+                activityDiv.className = 'staff-item';
+                activityDiv.style.padding = '10px';
+                activityDiv.style.marginBottom = '5px';
+                activityDiv.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-user-check" style="color: var(--staff-purple);"></i>
+                        <div>
+                            <div style="font-size: 0.9rem;">${activity.staff} assigned to Room ${activity.room}</div>
+                            <div style="font-size: 0.7rem; color: var(--secondary);">${activity.time}</div>
+                        </div>
+                    </div>
+                `;
+                recentActivity.appendChild(activityDiv);
+            });
+            
+            if (activitiesToShow.length === 0) {
+                recentActivity.innerHTML = '<div style="text-align: center; color: var(--secondary); padding: 20px;">No recent activity</div>';
+            }
+        }
+
+        // Load staff list
+        function loadStaffList() {
+            const staffListContainer = document.getElementById('staffListContainer');
+            staffListContainer.innerHTML = '';
+            
+            staffMembers.forEach(staff => {
+                const staffItem = document.createElement('div');
+                staffItem.className = 'staff-item';
+                staffItem.onclick = () => showStaffDetails(staff.id);
+                
+                const assignedRoomsCount = staff.assignedRooms.length;
+                
+                staffItem.innerHTML = `
+                    <div class="staff-avatar">
+                        ${staff.name.split(' ').map(n => n[0]).join('')}
+                    </div>
+                    <div class="staff-info">
+                        <div class="staff-name">${staff.name}</div>
+                        <div class="staff-role">${staff.role} • ${staff.department}</div>
+                        <div style="font-size: 0.7rem; color: var(--secondary); margin-top: 5px;">
+                            <i class="fas fa-door-closed"></i> ${assignedRoomsCount} rooms
+                            <span style="margin-left: 10px;">
+                                <i class="fas fa-star" style="color: var(--warning);"></i> ${staff.rating}/5
+                            </span>
+                        </div>
+                    </div>
+                    <div class="staff-status ${staff.status === 'active' ? 'status-active' : staff.status === 'busy' ? 'status-busy' : 'status-offline'}">
+                        ${staff.status}
+                    </div>
+                `;
+                
+                staffListContainer.appendChild(staffItem);
+            });
+            
+            if (staffMembers.length === 0) {
+                staffListContainer.innerHTML = '<div style="text-align: center; color: var(--secondary); padding: 40px;">No staff members added yet</div>';
+            }
+        }
+
+        // Search staff
+        function searchStaff() {
+            const query = document.getElementById('staffSearch').value.toLowerCase();
+            const staffItems = document.querySelectorAll('.staff-item');
+            
+            staffItems.forEach(item => {
+                const name = item.querySelector('.staff-name').textContent.toLowerCase();
+                const role = item.querySelector('.staff-role').textContent.toLowerCase();
+                
+                if (name.includes(query) || role.includes(query)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // Show staff details
+        function showStaffDetails(staffId) {
+            const staff = staffMembers.find(s => s.id === staffId);
+            if (!staff) return;
+            
+            const modalTitle = document.getElementById('modalTitle');
+            const modalMessage = document.getElementById('modalMessage');
+            
+            modalTitle.textContent = `Staff Details - ${staff.name}`;
+            
+            const assignedRoomsHTML = staff.assignedRooms.length > 0 ? 
+                staff.assignedRooms.map(roomKey => {
+                    const [floor, room] = roomKey.split('-');
+                    return `<span class="assignment-tag">Room ${room}</span>`;
+                }).join('') : 
+                '<span style="color: var(--secondary);">No rooms assigned</span>';
+            
+            modalMessage.innerHTML = `
+                <div class="booking-details">
+                    <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 20px;">
+                        <div class="staff-avatar" style="width: 80px; height: 80px; font-size: 1.5rem;">
+                            ${staff.name.split(' ').map(n => n[0]).join('')}
+                        </div>
+                        <div>
+                            <h3 style="color: var(--primary); margin-bottom: 5px;">${staff.name}</h3>
+                            <div style="color: var(--secondary);">${staff.role} • ${staff.department}</div>
+                            <div style="color: var(--warning); margin-top: 5px;">
+                                <i class="fas fa-star"></i> ${staff.rating}/5 Rating
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+                        <div>
+                            <p><strong>Contact:</strong> ${staff.contact}</p>
+                            <p><strong>Status:</strong> 
+                                <span class="staff-status ${staff.status === 'active' ? 'status-active' : staff.status === 'busy' ? 'status-busy' : 'status-offline'}">
+                                    ${staff.status}
+                                </span>
+                            </p>
+                        </div>
+                        <div>
+                            <p><strong>Join Date:</strong> ${staff.joinDate}</p>
+                            <p><strong>Assigned Rooms:</strong> ${staff.assignedRooms.length}</p>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 15px;">
+                        <strong>Assigned Rooms:</strong>
+                        <div style="margin-top: 10px;">
+                            ${assignedRoomsHTML}
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <button class="control-btn" onclick="editStaffMember(${staff.id})">
+                        <i class="fas fa-edit"></i>
+                        <span>Edit</span>
+                    </button>
+                    <button class="control-btn" onclick="removeStaffMember(${staff.id})" style="background: rgba(231, 76, 60, 0.1); border-color: rgba(231, 76, 60, 0.3);">
+                        <i class="fas fa-trash"></i>
+                        <span>Remove</span>
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('successModal').style.display = 'flex';
+        }
+
+        // Add new staff member
+        function addNewStaffMember() {
+            const name = prompt("Enter staff member's name:");
+            if (!name) return;
+            
+            const role = prompt("Enter role:");
+            if (!role) return;
+            
+            const department = prompt("Enter department:");
+            if (!department) return;
+            
+            const contact = prompt("Enter contact number:");
+            if (!contact) return;
+            
+            const newStaff = {
+                id: staffMembers.length > 0 ? Math.max(...staffMembers.map(s => s.id)) + 1 : 1,
+                name,
+                role,
+                department,
+                contact,
+                status: 'active',
+                rating: (4 + Math.random()).toFixed(1),
+                assignedRooms: [],
+                tasks: [],
+                joinDate: new Date().toISOString().split('T')[0]
+            };
+            
+            staffMembers.push(newStaff);
+            saveAllData();
+            
+            showNotification(`✅ Added new staff member: ${name}`, 'success');
+            
+            // Refresh staff list
+            if (document.getElementById('staffListTab').classList.contains('active')) {
+                loadStaffList();
+            }
+            loadStaffOverview();
+            updateFABBadges();
+        }
+
+        // Edit staff member
+        function editStaffMember(staffId) {
+            const staff = staffMembers.find(s => s.id === staffId);
+            if (!staff) return;
+            
+            const newName = prompt("Edit name:", staff.name);
+            if (newName !== null) staff.name = newName;
+            
+            const newRole = prompt("Edit role:", staff.role);
+            if (newRole !== null) staff.role = newRole;
+            
+            const newContact = prompt("Edit contact:", staff.contact);
+            if (newContact !== null) staff.contact = newContact;
+            
+            const newStatus = prompt("Edit status (active/busy/offline):", staff.status);
+            if (newStatus !== null) staff.status = newStatus;
+            
+            saveAllData();
+            showNotification(`✅ Updated staff member: ${staff.name}`, 'success');
+            
+            // Refresh if needed
+            closeModal();
+            showStaffDetails(staffId);
+        }
+
+        // Remove staff member
+        function removeStaffMember(staffId) {
+            if (!confirm('Are you sure you want to remove this staff member?')) return;
+            
+            const staffIndex = staffMembers.findIndex(s => s.id === staffId);
+            if (staffIndex === -1) return;
+            
+            const staffName = staffMembers[staffIndex].name;
+            staffMembers.splice(staffIndex, 1);
+            
+            saveAllData();
+            showNotification(`✅ Removed staff member: ${staffName}`, 'success');
+            
+            // Refresh displays
+            closeModal();
+            loadStaffOverview();
+            loadStaffList();
+            updateFABBadges();
+        }
+
+        // Load assign rooms tab
+        function loadAssignRoomsTab() {
+            // Load available rooms
+            const availableRoomsList = document.getElementById('availableRoomsList');
+            availableRoomsList.innerHTML = '';
+            
+            Object.keys(roomStatus).forEach(roomKey => {
+                const [floor, room] = roomKey.split('-');
+                const details = roomStatus[roomKey];
+                
+                // Check if room is already assigned
+                const isAssigned = staffMembers.some(staff => staff.assignedRooms.includes(roomKey));
+                
+                const roomDiv = document.createElement('div');
+                roomDiv.className = 'staff-item';
+                roomDiv.style.marginBottom = '8px';
+                roomDiv.style.cursor = 'pointer';
+                roomDiv.style.opacity = isAssigned ? '0.6' : '1';
+                
+                roomDiv.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <div>
+                            <div style="font-weight: bold; color: ${isAssigned ? 'var(--secondary)' : 'var(--primary)'};">Room ${room}</div>
+                            <div style="font-size: 0.8rem; color: var(--secondary);">${details.name}</div>
+                        </div>
+                        <div style="font-size: 0.8rem; color: ${isAssigned ? 'var(--staff-purple)' : 'var(--secondary)'};">
+                            ${isAssigned ? '<i class="fas fa-user-tie"></i> Assigned' : '<i class="fas fa-user-clock"></i> Available'}
+                        </div>
+                    </div>
+                `;
+                
+                if (!isAssigned) {
+                    roomDiv.onclick = () => selectRoomForAssignment(roomKey);
+                }
+                
+                availableRoomsList.appendChild(roomDiv);
+            });
+            
+            if (Object.keys(roomStatus).length === 0) {
+                availableRoomsList.innerHTML = '<div style="text-align: center; color: var(--secondary); padding: 40px;">No rooms available for assignment</div>';
+            }
+            
+            // Load available staff
+            const availableStaffList = document.getElementById('availableStaffList');
+            availableStaffList.innerHTML = '';
+            
+            staffMembers.forEach(staff => {
+                const staffDiv = document.createElement('div');
+                staffDiv.className = 'staff-item';
+                staffDiv.style.marginBottom = '8px';
+                staffDiv.style.cursor = 'pointer';
+                
+                staffDiv.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
+                        <div class="staff-avatar" style="width: 35px; height: 35px; font-size: 0.9rem;">
+                            ${staff.name.split(' ').map(n => n[0]).join('')}
+                        </div>
+                        <div>
+                            <div style="font-weight: bold;">${staff.name}</div>
+                            <div style="font-size: 0.8rem; color: var(--secondary);">${staff.role}</div>
+                            <div style="font-size: 0.7rem; color: var(--warning);">${staff.rating}/5 • ${staff.assignedRooms.length} rooms</div>
+                        </div>
+                    </div>
+                `;
+                
+                staffDiv.onclick = () => selectStaffForAssignment(staff.id);
+                availableStaffList.appendChild(staffDiv);
+            });
+            
+            // Clear previous selection
+            selectedRoomForAssignment = null;
+            selectedStaffForAssignment = null;
+            document.getElementById('assignmentPanel').style.display = 'none';
+        }
+
+        // Select room for assignment
+        function selectRoomForAssignment(roomKey) {
+            selectedRoomForAssignment = roomKey;
+            
+            // Highlight selected room
+            document.querySelectorAll('#availableRoomsList .staff-item').forEach(item => {
+                item.style.background = 'rgba(255, 255, 255, 0.05)';
+                item.style.borderColor = 'transparent';
+            });
+            
+            const selectedElement = document.querySelector(`#availableRoomsList .staff-item:nth-child(${Object.keys(roomStatus).indexOf(roomKey) + 1})`);
+            if (selectedElement) {
+                selectedElement.style.background = 'rgba(0, 255, 157, 0.1)';
+                selectedElement.style.borderColor = 'var(--primary)';
+            }
+            
+            // If staff is also selected, show assignment panel
+            if (selectedRoomForAssignment && selectedStaffForAssignment) {
+                showAssignmentPanel();
+            }
+        }
+
+        // Select staff for assignment
+        function selectStaffForAssignment(staffId) {
+            selectedStaffForAssignment = staffId;
+            
+            // Highlight selected staff
+            document.querySelectorAll('#availableStaffList .staff-item').forEach(item => {
+                item.style.background = 'rgba(255, 255, 255, 0.05)';
+                item.style.borderColor = 'transparent';
+            });
+            
+            const staffIndex = staffMembers.findIndex(s => s.id === staffId);
+            const selectedElement = document.querySelector(`#availableStaffList .staff-item:nth-child(${staffIndex + 1})`);
+            if (selectedElement) {
+                selectedElement.style.background = 'rgba(155, 89, 182, 0.1)';
+                selectedElement.style.borderColor = 'var(--staff-purple)';
+            }
+            
+            // If room is also selected, show assignment panel
+            if (selectedRoomForAssignment && selectedStaffForAssignment) {
+                showAssignmentPanel();
+            }
+        }
+
+        // Show assignment panel
+        function showAssignmentPanel() {
+            const roomKey = selectedRoomForAssignment;
+            const staffId = selectedStaffForAssignment;
+            
+            if (!roomKey || !staffId) return;
+            
+            const [floor, room] = roomKey.split('-');
+            const roomDetails = roomStatus[roomKey];
+            const staff = staffMembers.find(s => s.id === staffId);
+            
+            if (!roomDetails || !staff) return;
+            
+            const assignmentPanel = document.getElementById('assignmentPanel');
+            const assignmentDetails = document.getElementById('assignmentDetails');
+            
+            assignmentDetails.innerHTML = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                        <div style="font-size: 0.9rem; color: var(--primary); margin-bottom: 5px;">Room Details</div>
+                        <div><strong>Room:</strong> ${room} (Floor ${floor})</div>
+                        <div><strong>Guest:</strong> ${roomDetails.name}</div>
+                        <div><strong>Type:</strong> ${roomDetails.roomType}</div>
+                    </div>
+                    <div style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                        <div style="font-size: 0.9rem; color: var(--staff-purple); margin-bottom: 5px;">Staff Details</div>
+                        <div><strong>Name:</strong> ${staff.name}</div>
+                        <div><strong>Role:</strong> ${staff.role}</div>
+                        <div><strong>Rating:</strong> ${staff.rating}/5</div>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Assignment Notes (Optional)</label>
+                    <textarea id="assignmentNotes" placeholder="Add any special instructions..." rows="2" style="width: 100%; padding: 10px;"></textarea>
+                </div>
+            `;
+            
+            assignmentPanel.style.display = 'block';
+            assignmentPanel.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Confirm assignment
+        function confirmAssignment() {
+            if (!selectedRoomForAssignment || !selectedStaffForAssignment) return;
+            
+            const staffId = selectedStaffForAssignment;
+            const roomKey = selectedRoomForAssignment;
+            const notes = document.getElementById('assignmentNotes')?.value || '';
+            
+            const staff = staffMembers.find(s => s.id === staffId);
+            if (staff && !staff.assignedRooms.includes(roomKey)) {
+                staff.assignedRooms.push(roomKey);
+                
+                // Add task for staff
+                const task = {
+                    id: Date.now(),
+                    staffId: staff.id,
+                    roomKey: roomKey,
+                    type: 'room_assignment',
+                    title: `Room ${roomKey.split('-')[1]} Assignment`,
+                    description: `Assigned to room ${roomKey.split('-')[1]} - ${notes}`,
+                    status: 'pending',
+                    priority: 'medium',
+                    createdAt: new Date().toISOString()
+                };
+                
+                tasks.push(task);
+                
+                saveAllData();
+                
+                const [floor, room] = roomKey.split('-');
+                showNotification(`✅ Assigned ${staff.name} to Room ${room}`, 'success');
+                
+                // Refresh displays
+                generateRooms();
+                updateCustomerTable();
+                loadStaffOverview();
+                loadAssignRoomsTab();
+                
+                // Reset selection
+                selectedRoomForAssignment = null;
+                selectedStaffForAssignment = null;
+            }
+        }
+
+        // Cancel assignment
+        function cancelAssignment() {
+            selectedRoomForAssignment = null;
+            selectedStaffForAssignment = null;
+            document.getElementById('assignmentPanel').style.display = 'none';
+            
+            // Clear highlights
+            document.querySelectorAll('#availableRoomsList .staff-item, #availableStaffList .staff-item').forEach(item => {
+                item.style.background = 'rgba(255, 255, 255, 0.05)';
+                item.style.borderColor = 'transparent';
+            });
+        }
+
+        // Assign staff to room (from room details)
+        function assignStaffToRoom(roomKey) {
+            showStaffManagement();
+            setTimeout(() => {
+                switchTab('assignRoomsTab', document.querySelectorAll('.tab-btn')[2]);
+                
+                // Pre-select the room if roomKey is provided
+                if (roomKey) {
+                    setTimeout(() => {
+                        selectedRoomForAssignment = roomKey;
+                        // Highlight the room
+                        const roomElements = document.querySelectorAll('#availableRoomsList .staff-item');
+                        roomElements.forEach((element, index) => {
+                            const currentRoomKey = Object.keys(roomStatus)[index];
+                            if (currentRoomKey === roomKey) {
+                                element.style.background = 'rgba(0, 255, 157, 0.1)';
+                                element.style.borderColor = 'var(--primary)';
+                                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                        });
+                    }, 100);
+                }
+            }, 100);
+        }
+
+        // Load staff tasks
+        function loadStaffTasks() {
+            const tasksList = document.getElementById('tasksList');
+            tasksList.innerHTML = '';
+            
+            const pendingTasks = tasks.filter(t => t.status === 'pending');
+            const completedTasks = tasks.filter(t => t.status === 'completed');
+            
+            if (pendingTasks.length === 0 && completedTasks.length === 0) {
+                tasksList.innerHTML = '<div style="text-align: center; color: var(--secondary); padding: 40px;">No tasks found</div>';
+                return;
+            }
+            
+            // Show pending tasks
+            if (pendingTasks.length > 0) {
+                const pendingHeader = document.createElement('div');
+                pendingHeader.innerHTML = '<h4 style="color: var(--warning); margin: 15px 0 10px 0;">Pending Tasks</h4>';
+                tasksList.appendChild(pendingHeader);
+                
+                pendingTasks.forEach(task => {
+                    const staff = staffMembers.find(s => s.id === task.staffId);
+                    const [floor, room] = task.roomKey?.split('-') || ['', ''];
+                    
+                    const taskDiv = document.createElement('div');
+                    taskDiv.className = 'staff-item';
+                    taskDiv.style.marginBottom = '10px';
+                    
+                    taskDiv.innerHTML = `
+                        <div style="width: 100%;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 5px;">
+                                <div style="font-weight: bold;">${task.title}</div>
+                                <span class="staff-status status-busy" style="font-size: 0.7rem;">Pending</span>
+                            </div>
+                            <div style="font-size: 0.9rem; color: var(--secondary); margin-bottom: 5px;">${task.description}</div>
+                            <div style="font-size: 0.8rem; color: var(--primary);">
+                                <i class="fas fa-user"></i> ${staff?.name || 'Unknown'} 
+                                ${room ? `• <i class="fas fa-door-closed"></i> Room ${room}` : ''}
+                                <span style="float: right;">
+                                    <button class="action-btn" onclick="completeTask(${task.id})" style="padding: 3px 8px; font-size: 0.7rem;">
+                                        <i class="fas fa-check"></i> Complete
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    tasksList.appendChild(taskDiv);
+                });
+            }
+            
+            // Show completed tasks
+            if (completedTasks.length > 0) {
+                const completedHeader = document.createElement('div');
+                completedHeader.innerHTML = '<h4 style="color: var(--success); margin: 20px 0 10px 0;">Completed Tasks</h4>';
+                tasksList.appendChild(completedHeader);
+                
+                completedTasks.slice(0, 5).forEach(task => {
+                    const staff = staffMembers.find(s => s.id === task.staffId);
+                    const [floor, room] = task.roomKey?.split('-') || ['', ''];
+                    
+                    const taskDiv = document.createElement('div');
+                    taskDiv.className = 'staff-item';
+                    taskDiv.style.marginBottom = '10px';
+                    taskDiv.style.opacity = '0.7';
+                    
+                    taskDiv.innerHTML = `
+                        <div style="width: 100%;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 5px;">
+                                <div style="font-weight: bold;">${task.title}</div>
+                                <span class="staff-status status-active" style="font-size: 0.7rem;">Completed</span>
+                            </div>
+                            <div style="font-size: 0.9rem; color: var(--secondary);">${task.description}</div>
+                            <div style="font-size: 0.8rem; color: var(--primary);">
+                                <i class="fas fa-user"></i> ${staff?.name || 'Unknown'} 
+                                ${room ? `• <i class="fas fa-door-closed"></i> Room ${room}` : ''}
+                            </div>
+                        </div>
+                    `;
+                    
+                    tasksList.appendChild(taskDiv);
+                });
+            }
+        }
+
+        // Complete task
+        function completeTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                task.status = 'completed';
+                task.completedAt = new Date().toISOString();
+                saveAllData();
+                showNotification('✅ Task marked as completed', 'success');
+                loadStaffTasks();
+                loadStaffOverview();
+            }
+        }
+
+        // Add new task
+        function addNewTask() {
+            const title = prompt("Enter task title:");
+            if (!title) return;
+            
+            const description = prompt("Enter task description:");
+            if (!description) return;
+            
+            // Let user select staff
+            let staffOptions = staffMembers.map(s => `${s.id}: ${s.name} (${s.role})`).join('\n');
+            const staffInput = prompt(`Select staff member:\n${staffOptions}\n\nEnter staff ID:`);
+            if (!staffInput) return;
+            
+            const staffId = parseInt(staffInput.split(':')[0]);
+            const selectedStaff = staffMembers.find(s => s.id === staffId);
+            
+            if (!selectedStaff) {
+                showNotification('Invalid staff selection', 'error');
+                return;
+            }
+            
+            const newTask = {
+                id: Date.now(),
+                staffId: staffId,
+                title: title,
+                description: description,
+                status: 'pending',
+                priority: 'medium',
+                createdAt: new Date().toISOString()
+            };
+            
+            tasks.push(newTask);
+            saveAllData();
+            
+            showNotification(`✅ Task assigned to ${selectedStaff.name}`, 'success');
+            loadStaffTasks();
+            loadStaffOverview();
+        }
+
+        // Refresh tasks
+        function refreshTasks() {
+            loadStaffTasks();
+            showNotification('Tasks refreshed', 'info');
+        }
+
+        // ============================================
+        // OTHER FUNCTIONS
+        // ============================================
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `notification-toast ${type}`;
+            toast.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'times-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            `;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                anime({
+                    targets: toast,
+                    opacity: 0,
+                    translateY: -50,
+                    duration: 300,
+                    complete: () => toast.remove()
+                });
+            }, 3000);
+        }
+
+        // Export to Excel
+        function exportToExcel() {
+            // Prepare data
+            const exportData = Object.keys(roomStatus).map(roomKey => {
+                const details = roomStatus[roomKey];
+                const [floor, room] = roomKey.split('-');
+                const assignedStaff = staffMembers.find(s => s.assignedRooms.includes(roomKey));
+                
+                return {
+                    'Room Number': room,
+                    'Floor': floor,
+                    'Guest Name': details.name,
+                    'Contact': details.contact,
+                    'Room Type': details.roomType,
+                    'Check-in Date': details.checkinDate,
+                    'Check-out Date': details.checkoutDate,
+                    'Total Bill': `₹${details.totalBill}`,
+                    'Assigned Staff': assignedStaff ? assignedStaff.name : 'Unassigned',
+                    'Staff Role': assignedStaff ? assignedStaff.role : '',
+                    'Status': 'Active'
+                };
+            });
+            
+            // Add staff summary
+            staffMembers.forEach(staff => {
+                exportData.push({
+                    'Room Number': 'STAFF',
+                    'Floor': '',
+                    'Guest Name': staff.name,
+                    'Contact': staff.contact,
+                    'Room Type': staff.role,
+                    'Check-in Date': staff.joinDate,
+                    'Check-out Date': '',
+                    'Total Bill': '',
+                    'Assigned Staff': staff.assignedRooms.length + ' rooms',
+                    'Staff Role': staff.department,
+                    'Status': staff.status
+                });
+            });
+            
+            // Create worksheet
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            
+            // Create workbook
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Hotel Data");
+            
+            // Generate filename
+            const date = new Date().toISOString().split('T')[0];
+            const filename = `EcoStay_Data_${date}.xlsx`;
+            
+            // Save file
+            XLSX.writeFile(wb, filename);
+            
+            showNotification(`Exported ${exportData.length} records to Excel`, 'success');
+        }
+
+        // Clear all data
+        function clearAllData() {
+            if (confirm('⚠️ Are you sure you want to clear ALL data? This action cannot be undone!')) {
+                roomStatus = {};
+                ecoStats = { 
+                    energySaved: 0, 
+                    roomsBooked: 0, 
+                    ecoScore: 100,
+                    waterSaved: 0,
+                    carbonReduced: 0,
+                    totalRevenue: 0,
+                    averageRating: 4.5
+                };
+                staffMembers = [
+                    {
+                        id: 1,
+                        name: "John Doe",
+                        role: "Housekeeping Supervisor",
+                        department: "Housekeeping",
+                        contact: "+91 98765 43210",
+                        status: "active",
+                        rating: 4.8,
+                        assignedRooms: [],
+                        tasks: [],
+                        joinDate: "2023-01-15"
+                    }
+                ];
+                tasks = [];
+                maintenanceRequests = [];
+                
+                localStorage.clear();
+                
+                generateRooms();
+                updateCustomerTable();
+                updateEcoStats();
+                updateFABBadges();
+                resetForm();
+                
+                showNotification('✅ All data cleared successfully!', 'success');
+            }
+        }
+
+        // Save all data
+        function saveAllData() {
+            localStorage.setItem('roomStatus', JSON.stringify(roomStatus));
+            localStorage.setItem('ecoStats', JSON.stringify(ecoStats));
+            localStorage.setItem('staffMembers', JSON.stringify(staffMembers));
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            localStorage.setItem('maintenanceRequests', JSON.stringify(maintenanceRequests));
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('successModal').style.display = 'none';
+        }
+
+        // Show booking success animation
+        function showBookingSuccessAnimation(bookingData) {
+            const roomElement = document.getElementById(`room-${bookingData.floorNo}-${bookingData.roomNo}`);
+            if (roomElement) {
+                anime({
+                    targets: roomElement,
+                    scale: [1, 1.2, 1],
+                    rotate: [0, 10, -10, 0],
+                    duration: 1000,
+                    easing: 'easeInOutSine'
+                });
+            }
+        }
+
+        // Create fallback QR code
+        function createFallbackQRCode(container, bookingData) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 180;
+            canvas.height = 180;
+            const ctx = canvas.getContext('2d');
+            
+            // Draw background
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, 180, 180);
+            
+            // Draw text
+            ctx.fillStyle = 'black';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('ECO-STAY', 90, 30);
+            ctx.fillText('PAYMENT CONFIRMATION', 90, 50);
+            
+            ctx.font = '10px Arial';
+            ctx.fillText(`Room: ${bookingData.roomNo}`, 90, 80);
+            ctx.fillText(`Amount: ₹${bookingData.totalBill}`, 90, 100);
+            ctx.fillText(`Serial: ${bookingData.serialNumber}`, 90, 120);
+            ctx.fillText('Scan to confirm payment', 90, 150);
+            
+            container.appendChild(canvas);
+        }
+
+        // Other FAB menu functions
+        function showRoomControls() {
+            toggleStaffMenu();
+            showNotification('Room controls will be implemented in next update', 'info');
+        }
+
+        function showQuickActions() {
+            toggleStaffMenu();
+            // Quick actions for staff
+            const action = prompt('Quick Action:\n1. Assign all available rooms\n2. Mark all tasks complete\n3. Generate daily report\n\nEnter choice (1-3):');
+            
+            if (action === '1') {
+                // Assign available rooms to staff
+                const availableRooms = Object.keys(roomStatus).filter(roomKey => 
+                    !staffMembers.some(staff => staff.assignedRooms.includes(roomKey))
+                );
+                
+                if (availableRooms.length === 0) {
+                    showNotification('No unassigned rooms available', 'info');
+                    return;
+                }
+                
+                availableRooms.forEach(roomKey => {
+                    const availableStaff = staffMembers.filter(staff => staff.status === 'active');
+                    if (availableStaff.length > 0) {
+                        const randomStaff = availableStaff[Math.floor(Math.random() * availableStaff.length)];
+                        if (!randomStaff.assignedRooms.includes(roomKey)) {
+                            randomStaff.assignedRooms.push(roomKey);
+                        }
+                    }
+                });
+                
+                saveAllData();
+                generateRooms();
+                updateCustomerTable();
+                showNotification(`Assigned ${availableRooms.length} rooms to staff`, 'success');
+                
+            } else if (action === '2') {
+                // Mark all pending tasks as complete
+                const pendingTasks = tasks.filter(t => t.status === 'pending');
+                pendingTasks.forEach(task => {
+                    task.status = 'completed';
+                    task.completedAt = new Date().toISOString();
+                });
+                
+                saveAllData();
+                showNotification(`Marked ${pendingTasks.length} tasks as complete`, 'success');
+                
+            } else if (action === '3') {
+                // Generate daily report
+                const report = `
+DAILY STAFF REPORT
+==================
+Date: ${new Date().toLocaleDateString()}
+Total Staff: ${staffMembers.length}
+Active Staff: ${staffMembers.filter(s => s.status === 'active').length}
+Assigned Rooms: ${staffMembers.reduce((sum, staff) => sum + staff.assignedRooms.length, 0)}
+Pending Tasks: ${tasks.filter(t => t.status === 'pending').length}
+Completed Today: ${tasks.filter(t => 
+    t.status === 'completed' && 
+    new Date(t.completedAt).toDateString() === new Date().toDateString()
+).length}
+==================
+                `;
+                
+                alert(report);
+                showNotification('Daily report generated', 'success');
+            }
+        }
+
+        function showMaintenance() {
+            toggleStaffMenu();
+            const roomKey = prompt('Enter room key (e.g., "3-305" for Floor 3 Room 305):');
+            if (!roomKey) return;
+            
+            const issue = prompt('Enter maintenance issue:');
+            if (!issue) return;
+            
+            const maintenanceRequest = {
+                id: Date.now(),
+                roomKey: roomKey,
+                issue: issue,
+                status: 'pending',
+                reportedAt: new Date().toISOString()
+            };
+            
+            maintenanceRequests.push(maintenanceRequest);
+            saveAllData();
+            
+            updateFABBadges();
+            showNotification(`Maintenance request logged for Room ${roomKey.split('-')[1]}`, 'success');
+        }
+
+        function showReports() {
+            toggleStaffMenu();
+            exportToExcel();
+        }
+
+        function showSettings() {
+            toggleStaffMenu();
+            const setting = prompt('Settings:\n1. Reset all data\n2. Export backup\n3. Import backup\n\nEnter choice (1-3):');
+            
+            if (setting === '1') {
+                clearAllData();
+            } else if (setting === '2') {
+                // Export backup
+                const backup = {
+                    roomStatus,
+                    ecoStats,
+                    staffMembers,
+                    tasks,
+                    maintenanceRequests,
+                    exportDate: new Date().toISOString()
+                };
+                
+                const backupStr = JSON.stringify(backup, null, 2);
+                const blob = new Blob([backupStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `ecostay_backup_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                
+                showNotification('Backup exported successfully', 'success');
+            } else if (setting === '3') {
+                // Import backup
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
+                input.onchange = function(e) {
+                    const file = e.target.files[0];
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        try {
+                            const backup = JSON.parse(event.target.result);
+                            roomStatus = backup.roomStatus || {};
+                            ecoStats = backup.ecoStats || {};
+                            staffMembers = backup.staffMembers || [];
+                            tasks = backup.tasks || [];
+                            maintenanceRequests = backup.maintenanceRequests || [];
+                            
+                            saveAllData();
+                            generateRooms();
+                            updateCustomerTable();
+                            updateEcoStats();
+                            updateFABBadges();
+                            
+                            showNotification('Backup imported successfully', 'success');
+                        } catch (error) {
+                            showNotification('Error importing backup', 'error');
+                        }
+                    };
+                    reader.readAsText(file);
+                };
+                input.click();
+            }
+        }
+
+        // Show stats details
+        function showStatsDetails() {
+            const modalTitle = document.getElementById('modalTitle');
+            const modalMessage = document.getElementById('modalMessage');
+            
+            modalTitle.textContent = 'Eco Stats Details';
+            modalMessage.innerHTML = `
+                <div class="booking-details">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div style="text-align: center; padding: 15px; background: rgba(0, 255, 157, 0.1); border-radius: 10px;">
+                            <div style="font-size: 1.5rem; color: var(--primary); font-family: \'Orbitron\';">${ecoStats.energySaved.toFixed(1)}</div>
+                            <div style="font-size: 0.9rem;">kWh Energy Saved</div>
+                        </div>
+                        <div style="text-align: center; padding: 15px; background: rgba(0, 184, 255, 0.1); border-radius: 10px;">
+                            <div style="font-size: 1.5rem; color: var(--secondary); font-family: \'Orbitron\';">${ecoStats.waterSaved}</div>
+                            <div style="font-size: 0.9rem;">Liters Water Saved</div>
+                        </div>
+                        <div style="text-align: center; padding: 15px; background: rgba(46, 204, 113, 0.1); border-radius: 10px;">
+                            <div style="font-size: 1.5rem; color: var(--success); font-family: \'Orbitron\';">${ecoStats.carbonReduced}</div>
+                            <div style="font-size: 0.9rem;">kg Carbon Reduced</div>
+                        </div>
+                        <div style="text-align: center; padding: 15px; background: rgba(155, 89, 182, 0.1); border-radius: 10px;">
+                            <div style="font-size: 1.5rem; color: var(--staff-purple); font-family: \'Orbitron\';">₹${ecoStats.totalRevenue.toFixed(0)}</div>
+                            <div style="font-size: 0.9rem;">Total Revenue</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <h4 style="color: var(--primary); margin-bottom: 10px;">Environmental Impact</h4>
+                        <p>Your hotel has saved the equivalent of:</p>
+                        <ul style="margin-left: 20px; margin-top: 10px;">
+                            <li>🌳 ${Math.floor(ecoStats.carbonReduced / 20)} trees planted</li>
+                            <li>🚗 ${Math.floor(ecoStats.carbonReduced / 0.12)} km not driven</li>
+                            <li>💡 ${Math.floor(ecoStats.energySaved / 50)} households powered for a day</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('successModal').style.display = 'flex';
+        }
+
+        // Show rooms overview
+        function showRoomsOverview() {
+            const modalTitle = document.getElementById('modalTitle');
+            const modalMessage = document.getElementById('modalMessage');
+            
+            const bookedRooms = Object.keys(roomStatus).length;
+            const availableRooms = 100 - bookedRooms;
+            const assignedRooms = staffMembers.reduce((count, staff) => count + staff.assignedRooms.length, 0);
+            
+            modalTitle.textContent = 'Rooms Overview';
+            modalMessage.innerHTML = `
+                <div class="booking-details">
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;">
+                        <div style="text-align: center; padding: 15px; background: rgba(0, 255, 157, 0.1); border-radius: 10px;">
+                            <div style="font-size: 1.5rem; color: var(--primary); font-family: \'Orbitron\';">${bookedRooms}</div>
+                            <div style="font-size: 0.9rem;">Booked Rooms</div>
+                        </div>
+                        <div style="text-align: center; padding: 15px; background: rgba(155, 89, 182, 0.1); border-radius: 10px;">
+                            <div style="font-size: 1.5rem; color: var(--staff-purple); font-family: \'Orbitron\';">${assignedRooms}</div>
+                            <div style="font-size: 0.9rem;">Staff Assigned</div>
+                        </div>
+                        <div style="text-align: center; padding: 15px; background: rgba(243, 156, 18, 0.1); border-radius: 10px;">
+                            <div style="font-size: 1.5rem; color: var(--warning); font-family: \'Orbitron\';">${availableRooms}</div>
+                            <div style="font-size: 0.9rem;">Available Rooms</div>
+                        </div>
+                    </div>
+                    
+                    <h4 style="color: var(--primary); margin-bottom: 10px;">Room Distribution</h4>
+                    <div style="height: 20px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; margin: 15px 0;">
+                        <div style="height: 100%; width: ${bookedRooms}%; background: linear-gradient(90deg, var(--primary), var(--secondary));"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--secondary);">
+                        <span>${bookedRooms}% Booked</span>
+                        <span>${availableRooms}% Available</span>
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <h4 style="color: var(--primary); margin-bottom: 10px;">Room Types</h4>
+                        <div style="font-size: 0.9rem;">
+                            ${Object.values(roomStatus).reduce((acc, room) => {
+                                acc[room.roomType] = (acc[room.roomType] || 0) + 1;
+                                return acc;
+                            }, {})}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('successModal').style.display = 'flex';
+        }
+
+        // Show eco score details
+        function showEcoScoreDetails() {
+            const modalTitle = document.getElementById('modalTitle');
+            const modalMessage = document.getElementById('modalMessage');
+            
+            modalTitle.textContent = 'Eco Score Analysis';
+            modalMessage.innerHTML = `
+                <div class="booking-details">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="font-size: 3rem; color: var(--eco-green); font-family: \'Orbitron\'; margin-bottom: 10px;">${ecoStats.ecoScore.toFixed(1)}%</div>
+                        <div style="font-size: 1.2rem; color: var(--primary);">Overall Eco Score</div>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: var(--primary); margin-bottom: 10px;">Score Breakdown</h4>
+                        <div style="display: grid; gap: 10px;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                    <span>Energy Efficiency</span>
+                                    <span style="color: var(--primary);">${Math.min(100, (ecoStats.energySaved / 2000) * 100).toFixed(1)}%</span>
+                                </div>
+                                <div style="height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+                                    <div style="height: 100%; width: ${Math.min(100, (ecoStats.energySaved / 2000) * 100)}%; background: var(--primary);"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                    <span>Water Conservation</span>
+                                    <span style="color: var(--secondary);">${Math.min(100, (ecoStats.waterSaved / 10000) * 100).toFixed(1)}%</span>
+                                </div>
+                                <div style="height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+                                    <div style="height: 100%; width: ${Math.min(100, (ecoStats.waterSaved / 10000) * 100)}%; background: var(--secondary);"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                    <span>Carbon Reduction</span>
+                                    <span style="color: var(--success);">${Math.min(100, (ecoStats.carbonReduced / 200) * 100).toFixed(1)}%</span>
+                                </div>
+                                <div style="height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+                                    <div style="height: 100%; width: ${Math.min(100, (ecoStats.carbonReduced / 200) * 100)}%; background: var(--success);"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px; padding: 15px; background: rgba(0, 255, 157, 0.1); border-radius: 10px;">
+                        <h4 style="color: var(--primary); margin-bottom: 10px;">Tips to Improve Score</h4>
+                        <ul style="margin-left: 20px;">
+                            <li>Enable eco-mode in more rooms</li>
+                            <li>Schedule regular energy audits</li>
+                            <li>Implement water-saving fixtures</li>
+                            <li>Use renewable energy sources</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('successModal').style.display = 'flex';
+        }
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+
+        window.onload = function() {
+            // Initialize displays
+            generateRooms();
+            updateCustomerTable();
+            updateEcoStats();
+            updateFABBadges();
+            
+            // Set default dates
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const dayAfter = new Date(tomorrow);
+            dayAfter.setDate(dayAfter.getDate() + 1);
+            
+            document.getElementById('checkinDate').value = tomorrow.toISOString().split('T')[0];
+            document.getElementById('checkoutDate').value = dayAfter.toISOString().split('T')[0];
+            
+            // Set min dates
+            document.getElementById('checkinDate').min = today.toISOString().split('T')[0];
+            document.getElementById('checkoutDate').min = tomorrow.toISOString().split('T')[0];
+            
+            // Add input validation
+            document.getElementById('totalBill').addEventListener('input', function(e) {
+                if (parseInt(this.value) < 0) this.value = 0;
+            });
+            
+            document.getElementById('floorNo').addEventListener('input', function(e) {
+                const val = parseInt(this.value);
+                if (val < 1) this.value = 1;
+                if (val > 10) this.value = 10;
+            });
+            
+            document.getElementById('roomNo').addEventListener('input', function(e) {
+                const val = parseInt(this.value);
+                if (val < 101) this.value = 101;
+                if (val > 1010) this.value = 1010;
+            });
+            
+            // Initialize search
+            document.getElementById('searchGuest').addEventListener('input', function(e) {
+                searchQuery = e.target.value;
+                updateCustomerTable();
+            });
+            
+            // Auto-focus
+            document.getElementById('name').focus();
+            
+            // Auto-save energy stats
+            setInterval(() => {
+                if (Object.keys(roomStatus).length > 0) {
+                    ecoStats.energySaved += 0.5;
+                    ecoStats.waterSaved += 2;
+                    ecoStats.carbonReduced += 0.1;
+                    updateEcoStats();
+                }
+            }, 30000);
+            
+            showNotification('🏨 EcoStay System Initialized Successfully', 'success');
+            
+            // Close FAB menu when clicking outside
+            document.addEventListener('click', function(event) {
+                const fabMenu = document.querySelector('.fab-menu');
+                const fabMain = document.querySelector('.fab-main');
+                
+                if (fabMenu.classList.contains('active') && 
+                    !fabMenu.contains(event.target) && 
+                    !fabMain.contains(event.target)) {
+                    fabMenu.classList.remove('active');
+                }
+            });
+        };
+    </script>
+</body>
+</html>
