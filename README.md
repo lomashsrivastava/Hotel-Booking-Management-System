@@ -28,3 +28,5 @@ A modern, eco-friendly Hotel Booking Management System designed to streamline ho
 ## Setup
 1. Clone the repository.
 2. Open `index.html` in your browser.
+
+Designed And Developed By Lomash Srivastava
